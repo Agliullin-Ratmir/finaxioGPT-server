@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" href="data:,">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>FinaxioGPT</title>
+    <style>
+        :root {
+          --bg-primary: #f9f9fb;
+          --bg-chat: #ffffff;
+          --text-primary: #1d1d1f;
+          --text-secondary: #6e6e73;
+          --accent: #6366f1;
+          --accent-hover: #4f46e5;
+          --user-msg-bg: #6366f1;
+          --user-msg-text: #ffffff;
+          --bot-msg-bg: #f1f1f3;
+          --border-color: #e5e5e7;
+          --input-bg: #ffffff;
+          --shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        @media (prefers-color-scheme: dark) {
+          :root {
+            --bg-primary: #1a1a1c;
+            --bg-chat: #232325;
+            --text-primary: #f5f5f7;
+            --text-secondary: #a1a1aa;
+            --accent: #818cf8;
+            --accent-hover: #6366f1;
+            --user-msg-bg: #4f46e5;
+            --bot-msg-bg: #2d2d30;
+            --border-color: #3f3f46;
+            --input-bg: #2d2d30;
+          }
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+          background: var(--bg-primary);
+          color: var(--text-primary);
+          height: 100vh;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .header {
+          padding: 16px 24px;
+          border-bottom: 1px solid var(--border-color);
+          background: var(--bg-chat);
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .header h1 {
+          font-size: 1.25rem;
+          font-weight: 600;
+        }
+        .header .logo {
+          width: 32px;
+          height: 32px;
+          background: var(--accent);
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: bold;
+          font-size: 14px;
+        }
+
+        .chat-container {
+          flex: 1;
+          overflow-y: auto;
+          padding: 24px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          max-width: 900px;
+          margin: 0 auto;
+          width: 100%;
+        }
+
+        .message {
+          display: flex;
+          gap: 12px;
+          max-width: 85%;
+          animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .message.user {
+          align-self: flex-end;
+          flex-direction: row-reverse;
+        }
+
+        .avatar {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 14px;
+          flex-shrink: 0;
+        }
+        .avatar.bot { background: var(--accent); color: white; }
+        .avatar.user { background: var(--text-secondary); color: white; }
+
+        .message-content {
+          padding: 12px 16px;
+          border-radius: 16px;
+          line-height: 1.5;
+          font-size: 15px;
+          word-wrap: break-word;
+        }
+        .bot .message-content {
+          background: var(--bot-msg-bg);
+          border-bottom-left-radius: 4px;
+        }
+        .user .message-content {
+          background: var(--user-msg-bg);
+          color: var(--user-msg-text);
+          border-bottom-right-radius: 4px;
+        }
+
+        .input-area {
+          padding: 16px 24px;
+          border-top: 1px solid var(--border-color);
+          background: var(--bg-chat);
+          max-width: 900px;
+          margin: 0 auto;
+          width: 100%;
+        }
+
+        .input-form {
+          display: flex;
+          gap: 12px;
+          align-items: flex-end;
+        }
+
+        .input-wrapper {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .params {
+          display: flex;
+          gap: 12px;
+          font-size: 13px;
+        }
+        .param-group {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          color: var(--text-secondary);
+        }
+        .param-group input {
+          width: 60px;
+          padding: 4px 8px;
+          border: 1px solid var(--border-color);
+          border-radius: 6px;
+          background: var(--input-bg);
+          color: var(--text-primary);
+          font-size: 13px;
+        }
+
+        textarea {
+          width: 100%;
+          padding: 14px 16px;
+          border: 1px solid var(--border-color);
+          border-radius: 16px;
+          background: var(--input-bg);
+          color: var(--text-primary);
+          font-size: 15px;
+          resize: none;
+          min-height: 56px;
+          max-height: 200px;
+          outline: none;
+          transition: border-color 0.2s;
+        }
+        textarea:focus { border-color: var(--accent); }
+
+        .send-btn {
+          padding: 14px 24px;
+          background: var(--accent);
+          color: white;
+          border: none;
+          border-radius: 16px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background 0.2s;
+          white-space: nowrap;
+        }
+        .send-btn:hover { background: var(--accent-hover); }
+        .send-btn:disabled {
+          background: var(--text-secondary);
+          cursor: not-allowed;
+          opacity: 0.7;
+        }
+
+        .typing-indicator {
+          display: none;
+          align-items: center;
+          gap: 4px;
+          padding: 12px 16px;
+          background: var(--bot-msg-bg);
+          border-radius: 16px;
+          border-bottom-left-radius: 4px;
+          width: fit-content;
+          color: var(--text-secondary);
+          font-size: 14px;
+        }
+        .typing-indicator.show { display: flex; }
+        .typing-indicator span {
+          width: 8px;
+          height: 8px;
+          background: var(--text-secondary);
+          border-radius: 50%;
+          animation: bounce 1.4s infinite ease-in-out;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes bounce {
+          0%, 60%, 100% { transform: translateY(0); }
+          30% { transform: translateY(-6px); }
+        }
+
+        .error-msg {
+          color: #ef4444;
+          font-size: 14px;
+          margin-top: 8px;
+          display: none;
+        }
+        .error-msg.show { display: block; }
+
+        @media (max-width: 640px) {
+          .message { max-width: 95%; }
+          .params { flex-wrap: wrap; }
+          .input-form { flex-direction: column; align-items: stretch; }
+          .send-btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="logo">AI</div>
+    <h1>FinaxioGPT</h1>
+</div>
+
+<div class="chat-container" id="chatContainer">
+    <!-- Messages will be inserted here -->
+    <div class="message bot">
+        <div class="avatar bot">AI</div>
+        <div class="message-content">Hello! How can I help you today?</div>
+    </div>
+</div>
+
+<div class="input-area">
+    <form class="input-form" id="chatForm">
+        <div class="input-wrapper">
+        <textarea
+                id="userInput"
+                placeholder="Type your message..."
+                rows="1"
+                required
+        ></textarea>
+            <div class="params">
+                <div class="param-group">
+                    <label for="topK">top_k:</label>
+                    <input type="number" id="topK" min="1" max="100" value="5">
+                </div>
+                <div class="param-group">
+                    <label for="temperature">temp:</label>
+                    <input type="number" id="temperature" min="0" max="2" step="0.1" value="0.1">
+                </div>
+            </div>
+            <div class="error-msg" id="errorMsg"></div>
+        </div>
+        <button type="submit" class="send-btn" id="sendBtn">Send</button>
+    </form>
+</div>
+
+<script>
+    const API_URL = `${window.location.protocol}//${window.location.hostname}:3050/send-request`;
+    const TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+
+    const chatContainer = document.getElementById('chatContainer');
+    const chatForm = document.getElementById('chatForm');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const errorMsg = document.getElementById('errorMsg');
+    const typingIndicator = document.createElement('div');
+    typingIndicator.className = 'typing-indicator';
+    typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+    chatContainer.appendChild(typingIndicator);
+
+    // Auto-resize textarea
+    userInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+    });
+
+    // Handle form submit
+    chatForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const query = userInput.value.trim();
+      if (!query) return;
+
+      const top_k = parseInt(document.getElementById('topK').value) || 5;
+      const temperature = parseFloat(document.getElementById('temperature').value) || 0.1;
+
+      // Add user message
+      console.log(query);
+      addMessage(query, 'user');
+      userInput.value = '';
+      userInput.style.height = 'auto';
+
+      // UI state: loading
+      sendBtn.disabled = true;
+      errorMsg.classList.remove('show');
+      typingIndicator.classList.add('show');
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      let timeoutId;
+      try {
+        const controller = new AbortController();
+        timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, top_k, temperature }),
+          signal: controller.signal
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log(data)
+        addMessage(data.response || 'No response received', 'bot');
+      } catch (error) {
+        console.error('Request failed:', error);
+        let msg = 'Failed to get response.';
+        if (error.name === 'AbortError') {
+          msg = 'Request timed out after 5 minutes. Please try again.';
+        } else if (error.message.includes('Failed to fetch')) {
+          msg = `Could not connect to API at ${window.location.hostname}:3050. Check that the RAG service is running and reachable.`;
+        }
+        showError(msg);
+      } finally {
+        clearTimeout(timeoutId);
+        sendBtn.disabled = false;
+        typingIndicator.classList.remove('show');
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+    });
+
+    function addMessage(text, sender) {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `message ${sender}`;
+      msgDiv.innerHTML = `
+        <div class="avatar ${sender}">${sender === 'bot' ? 'AI' : 'U'}</div>
+        <div class="message-content">${escapeHtml(text)}</div>
+      `;
+      chatContainer.insertBefore(msgDiv, typingIndicator);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function showError(message) {
+      errorMsg.textContent = message;
+      errorMsg.classList.add('show');
+      setTimeout(() => errorMsg.classList.remove('show'), 5000);
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML.replace(/\n/g, '<br>');
+    }
+
+    // Allow Ctrl+Enter to send
+    userInput.addEventListener('keydown', (e) => {
+     // if (e.ctrlKey && e.key === 'Enter') {
+     if (e.key === 'Enter') {
+        chatForm.requestSubmit();
+      }
+    });
+</script>
+</body>
+</html>

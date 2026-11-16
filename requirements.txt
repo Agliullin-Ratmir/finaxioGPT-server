@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+chromadb
+llama-index-core
+llama-index-vector-stores-chroma
+llama-index-llms-openai-like
+openai
+llama-index-embeddings-huggingface
+llama-index-readers-file
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.9.1+cpu

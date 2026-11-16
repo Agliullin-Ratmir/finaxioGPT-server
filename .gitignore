@@ -1,0 +1,31 @@
+# Локальная база знаний и секреты
+/docs/
+/api.md
+
+# Виртуальные окружения Python
+.venv/
+venv/
+env/
+ENV/
+
+# Кэш и временные файлы Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+
+# Сборка и установка пакетов Python
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Локальные базы и данные RAG
+/chroma_db/
+
+# Файлы IDE и операционной системы
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
